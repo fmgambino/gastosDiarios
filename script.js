@@ -1,5 +1,5 @@
 const CONFIG = {
-  APPS_SCRIPT_URL: "", // PEGÁ AQUÍ tu URL /exec del Web App
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyvaLIYL2vp48HmuvwxLBBR3XH8hTGO6O5H3cc4vYFoPsAOr4Pnaj3EuEPiyKU2qMBW/exec", // PEGÁ AQUÍ tu URL /exec del Web App
   STORAGE_THEME: "gd-theme",
   STORAGE_DEMO_DB: "gd-demo-db",
   STORAGE_TOKEN: "gd-token",
