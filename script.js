@@ -1,6 +1,5 @@
-
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyvaLIYL2vp48HmuvwxLBBR3XH8hTGO6O5H3cc4vYFoPsAOr4Pnaj3EuEPiyKU2qMBW/exec", // Pegá aquí la URL del Web App de Google Apps Script
+  APPS_SCRIPT_URL: "", // PEGÁ AQUÍ tu URL /exec del Web App
   STORAGE_THEME: "gd-theme",
   STORAGE_DEMO_DB: "gd-demo-db",
   STORAGE_TOKEN: "gd-token",
@@ -19,9 +18,9 @@ const MOVEMENT_LABELS = {
 };
 
 const ICONS = {
-  view: `<svg viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>`,
-  edit: `<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>`,
-  delete: `<svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>`,
+  view: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>`,
+  edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>`,
+  delete: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>`,
 };
 
 const state = {
@@ -56,6 +55,7 @@ function init() {
 function bindDom() {
   dom.body = document.body;
   dom.root = document.documentElement;
+
   dom.loginScreen = document.getElementById("loginScreen");
   dom.dashboardScreen = document.getElementById("dashboardScreen");
   dom.loginForm = document.getElementById("loginForm");
@@ -104,29 +104,31 @@ function bindDom() {
 }
 
 function bindEvents() {
-  dom.loginForm.addEventListener("submit", handleLogin);
-  dom.themeToggle.addEventListener("click", toggleTheme);
-  dom.filtersToggleBtn.addEventListener("click", toggleFilters);
-  dom.periodFilter.addEventListener("change", toggleCustomDates);
-  dom.filtersForm.addEventListener("submit", (event) => {
+  dom.loginForm?.addEventListener("submit", handleLogin);
+  dom.themeToggle?.addEventListener("click", toggleTheme);
+  dom.filtersToggleBtn?.addEventListener("click", toggleFilters);
+  dom.periodFilter?.addEventListener("change", toggleCustomDates);
+
+  dom.filtersForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     loadDashboard();
   });
-  dom.clearFiltersBtn.addEventListener("click", clearFilters);
-  dom.refreshBtn.addEventListener("click", loadDashboard);
 
-  dom.openModalBtn.addEventListener("click", () => openRecordModal("create"));
-  dom.recordForm.addEventListener("submit", handleSaveRecord);
-  dom.recordQuantity.addEventListener("input", calculateTotal);
-  dom.recordUnitPrice.addEventListener("input", calculateTotal);
+  dom.clearFiltersBtn?.addEventListener("click", clearFilters);
+  dom.refreshBtn?.addEventListener("click", loadDashboard);
+  dom.openModalBtn?.addEventListener("click", () => openRecordModal("create"));
 
-  dom.recordsTableBody.addEventListener("click", handleTableAction);
+  dom.recordForm?.addEventListener("submit", handleSaveRecord);
+  dom.recordQuantity?.addEventListener("input", calculateTotal);
+  dom.recordUnitPrice?.addEventListener("input", calculateTotal);
+
+  dom.recordsTableBody?.addEventListener("click", handleTableAction);
 
   document.querySelectorAll("[data-close-modal='true']").forEach((button) => {
     button.addEventListener("click", closeRecordModal);
   });
 
-  dom.recordModal.addEventListener("click", (event) => {
+  dom.recordModal?.addEventListener("click", (event) => {
     if (event.target === dom.recordModal) closeRecordModal();
   });
 }
@@ -200,34 +202,42 @@ function saveDemoDB(data) {
 }
 
 function showLogin() {
-  dom.loginScreen.classList.add("screen--active");
-  dom.dashboardScreen.classList.remove("screen--active");
+  dom.loginScreen?.classList.add("screen--active");
+  dom.dashboardScreen?.classList.remove("screen--active");
 }
 
 function showDashboard() {
-  dom.dashboardScreen.classList.add("screen--active");
-  dom.loginScreen.classList.remove("screen--active");
+  dom.dashboardScreen?.classList.add("screen--active");
+  dom.loginScreen?.classList.remove("screen--active");
 }
 
 async function handleLogin(event) {
   event.preventDefault();
-  setMessage(dom.loginMessage, "Validando acceso...", false);
 
   const username = dom.username.value.trim();
   const password = dom.password.value;
 
+  if (!username || !password) {
+    setMessage(dom.loginMessage, "Ingresá usuario y contraseña.", true);
+    return;
+  }
+
   try {
+    setMessage(dom.loginMessage, "Validando acceso...", false);
+
     const response = await api("login", { username, password }, false);
-    state.token = response.token;
-    state.user = username;
+
+    state.token = response.token || "";
+    state.user = response.user || username;
 
     sessionStorage.setItem(CONFIG.STORAGE_TOKEN, state.token);
     sessionStorage.setItem(CONFIG.STORAGE_USER, state.user);
 
     setMessage(dom.loginMessage, "Acceso correcto.", false);
+    dom.loginForm.reset();
+
     showDashboard();
     await loadDashboard();
-    dom.loginForm.reset();
   } catch (error) {
     console.error(error);
     setMessage(dom.loginMessage, error.message || "No fue posible iniciar sesión.", true);
@@ -241,7 +251,7 @@ function toggleTheme() {
 
 function applyTheme(theme) {
   state.theme = theme;
-  dom.root.setAttribute("data-theme", theme);
+  dom.root?.setAttribute("data-theme", theme);
   localStorage.setItem(CONFIG.STORAGE_THEME, theme);
 }
 
@@ -254,7 +264,7 @@ function toggleFilters() {
 }
 
 function toggleCustomDates() {
-  dom.customDates.classList.toggle("hidden", dom.periodFilter.value !== "custom");
+  dom.customDates?.classList.toggle("hidden", dom.periodFilter.value !== "custom");
 }
 
 function clearFilters() {
@@ -272,8 +282,9 @@ async function loadDashboard() {
   try {
     const filters = collectFilters();
     const response = await api("list", filters);
-    state.records = response.records || [];
-    state.categories = response.categories || [];
+
+    state.records = Array.isArray(response.records) ? response.records : [];
+    state.categories = Array.isArray(response.categories) ? response.categories : [];
     state.summary = response.summary || summarizeRecords(state.records);
 
     renderCategories();
@@ -285,28 +296,42 @@ async function loadDashboard() {
     }
   } catch (error) {
     console.error(error);
+
+    if (/sesión expirada/i.test(error.message || "")) {
+      sessionStorage.removeItem(CONFIG.STORAGE_TOKEN);
+      sessionStorage.removeItem(CONFIG.STORAGE_USER);
+      state.token = "";
+      state.user = "";
+      showLogin();
+    }
+
     alert(error.message || "No se pudieron cargar los registros.");
   }
 }
 
 function collectFilters() {
   return {
-    period: dom.periodFilter.value,
-    from: dom.fromFilter.value,
-    to: dom.toFilter.value,
-    category: dom.categoryFilter.value,
-    detail: dom.detailFilter.value.trim(),
-    search: dom.searchFilter.value.trim(),
+    period: dom.periodFilter?.value || "30",
+    from: dom.fromFilter?.value || "",
+    to: dom.toFilter?.value || "",
+    category: dom.categoryFilter?.value || "",
+    detail: dom.detailFilter?.value.trim() || "",
+    search: dom.searchFilter?.value.trim() || "",
   };
 }
 
 function renderCategories() {
   const uniqueCategories = ["", ...new Set(state.categories.filter(Boolean))];
+
   dom.categoryFilter.innerHTML = uniqueCategories
-    .map((category) => `<option value="${escapeHtml(category)}">${category || "Todas"}</option>`)
+    .map((category) => {
+      const selected = category === (dom.categoryFilter.dataset.selectedValue || dom.categoryFilter.value) ? "selected" : "";
+      return `<option value="${escapeHtml(category)}" ${selected}>${category || "Todas"}</option>`;
+    })
     .join("");
 
   dom.categoriesList.innerHTML = [...new Set(state.categories.filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b))
     .map((category) => `<option value="${escapeHtml(category)}"></option>`)
     .join("");
 }
@@ -329,6 +354,7 @@ function renderTable() {
   dom.recordsTableBody.innerHTML = state.records
     .map((record) => {
       const movementClass = MOVEMENT_LABELS[record.movimiento] || MOVEMENT_LABELS.Egreso;
+
       return `
         <tr>
           <td>${escapeHtml(record.id)}</td>
@@ -373,12 +399,17 @@ function openRecordModal(mode, record = null) {
   state.currentRecordId = record?.id || "";
 
   const readOnly = mode === "view";
-  const isCreate = mode === "create";
 
   dom.modalTitle.textContent =
     mode === "create" ? "Nuevo registro" : mode === "edit" ? "Editar registro" : "Ver registro";
+
   dom.modalSubtitle.textContent =
-    mode === "create" ? "Carga de movimiento" : mode === "edit" ? "Actualización de movimiento" : "Consulta de movimiento";
+    mode === "create"
+      ? "Carga de movimiento"
+      : mode === "edit"
+      ? "Actualización de movimiento"
+      : "Consulta de movimiento";
+
   dom.saveRecordBtn.classList.toggle("hidden", readOnly);
 
   const id = record?.id || generateId();
@@ -412,6 +443,7 @@ function closeRecordModal() {
   dom.recordForm.reset();
   dom.recordTotal.value = "";
   setFormReadOnly(false);
+  setMessage(dom.formMessage, "", false);
 }
 
 function setFormReadOnly(readOnly) {
@@ -424,7 +456,7 @@ function setFormReadOnly(readOnly) {
     dom.recordUnitPrice,
     dom.recordCurrency,
   ].forEach((field) => {
-    field.disabled = readOnly;
+    if (field) field.disabled = readOnly;
   });
 }
 
@@ -450,10 +482,24 @@ async function handleSaveRecord(event) {
     total: Number(dom.recordTotal.value || 0),
   };
 
+  if (!payload.detalle) {
+    setMessage(dom.formMessage, "El detalle es obligatorio.", true);
+    return;
+  }
+
+  if (!payload.categoria) {
+    setMessage(dom.formMessage, "La categoría es obligatoria.", true);
+    return;
+  }
+
+  if (!payload.fechaHora) {
+    setMessage(dom.formMessage, "La fecha/hora es obligatoria.", true);
+    return;
+  }
+
   try {
     setMessage(dom.formMessage, "Guardando registro...", false);
     await api("upsert", payload);
-    setMessage(dom.formMessage, "Registro guardado correctamente.", false);
     closeRecordModal();
     await loadDashboard();
   } catch (error) {
@@ -475,26 +521,47 @@ async function deleteRecord(record) {
   }
 }
 
+/**
+ * API remota contra Google Apps Script.
+ * IMPORTANTE:
+ * - Usa x-www-form-urlencoded para evitar preflight/CORS problemático.
+ * - NO envía application/json.
+ */
 async function api(action, payload = {}, withToken = true) {
   if (!CONFIG.APPS_SCRIPT_URL) {
     return localApi(action, payload, withToken);
   }
 
-  const body = JSON.stringify({
-    action,
-    ...(withToken ? { token: state.token } : {}),
-    ...payload,
+  const params = new URLSearchParams();
+  params.append("action", action);
+
+  if (withToken && state.token) {
+    params.append("token", state.token);
+  }
+
+  Object.entries(payload || {}).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    params.append(key, String(value));
   });
 
-  const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8",
-    },
-    body,
-  });
+  let response;
+  try {
+    response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: "POST",
+      body: params,
+    });
+  } catch (networkError) {
+    throw new Error(
+      "No se pudo conectar con Google Apps Script. Revisá la URL del Web App y que el deployment esté publicado como 'Anyone'."
+    );
+  }
 
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch (parseError) {
+    throw new Error("La respuesta del servidor no es JSON válido.");
+  }
 
   if (!data.ok) {
     throw new Error(data.message || "Error en Google Sheets / Apps Script.");
@@ -503,6 +570,9 @@ async function api(action, payload = {}, withToken = true) {
   return data;
 }
 
+/**
+ * API local fallback para desarrollo sin Google Sheets.
+ */
 function localApi(action, payload = {}, withToken = true) {
   return new Promise((resolve, reject) => {
     try {
@@ -512,11 +582,17 @@ function localApi(action, payload = {}, withToken = true) {
 
       const db = loadDemoDB() || { categories: [], records: [] };
 
+      if (action === "health") {
+        return resolve({ ok: true, app: "Gastos Diarios Demo" });
+      }
+
       if (action === "login") {
         const valid =
-          payload.username === DEMO_CREDENTIALS.username && payload.password === DEMO_CREDENTIALS.password;
+          payload.username === DEMO_CREDENTIALS.username &&
+          payload.password === DEMO_CREDENTIALS.password;
+
         if (!valid) throw new Error("Usuario o contraseña incorrectos.");
-        return resolve({ ok: true, token: "demo-token" });
+        return resolve({ ok: true, token: "demo-token", user: payload.username });
       }
 
       if (action === "list") {
@@ -531,13 +607,16 @@ function localApi(action, payload = {}, withToken = true) {
 
       if (action === "upsert") {
         if (!payload.categoria) throw new Error("La categoría es obligatoria.");
+
         const index = db.records.findIndex((item) => item.id === payload.id);
         const normalized = normalizeRecord(payload);
 
         if (index >= 0) db.records[index] = normalized;
         else db.records.push(normalized);
 
-        if (!db.categories.includes(normalized.categoria)) db.categories.push(normalized.categoria);
+        if (!db.categories.includes(normalized.categoria)) {
+          db.categories.push(normalized.categoria);
+        }
 
         saveDemoDB(db);
         return resolve({ ok: true, record: normalized });
@@ -563,14 +642,20 @@ function applyFilters(records, filters) {
   if (filters.period === "7" || filters.period === "30") {
     const days = Number(filters.period);
     const limit = new Date(now.getTime() - days * 86400000);
-    result = result.filter((item) => new Date(item.fechaHora) >= limit);
+
+    result = result.filter((item) => {
+      const date = new Date(item.fechaHora);
+      return !Number.isNaN(date.getTime()) && date >= limit;
+    });
   }
 
   if (filters.period === "custom") {
     const from = filters.from ? new Date(`${filters.from}T00:00`) : null;
     const to = filters.to ? new Date(`${filters.to}T23:59`) : null;
+
     result = result.filter((item) => {
       const date = new Date(item.fechaHora);
+      if (Number.isNaN(date.getTime())) return false;
       if (from && date < from) return false;
       if (to && date > to) return false;
       return true;
@@ -583,13 +668,13 @@ function applyFilters(records, filters) {
 
   if (filters.detail) {
     const needle = filters.detail.toLowerCase();
-    result = result.filter((item) => item.detalle.toLowerCase().includes(needle));
+    result = result.filter((item) => String(item.detalle || "").toLowerCase().includes(needle));
   }
 
   if (filters.search) {
     const needle = filters.search.toLowerCase();
     result = result.filter((item) =>
-      [item.id, item.detalle, item.categoria, item.moneda]
+      [item.id, item.detalle, item.categoria, item.moneda, item.movimiento]
         .join(" ")
         .toLowerCase()
         .includes(needle)
@@ -609,6 +694,7 @@ function summarizeRecords(records) {
 
   for (const record of records) {
     const total = Number(record.total || 0);
+
     if (record.movimiento === "Ingreso") summary.ingresos += total;
     if (record.movimiento === "Egreso") summary.egresos += total;
     if (record.movimiento === "Ahorro") summary.ahorro += total;
@@ -619,16 +705,19 @@ function summarizeRecords(records) {
 }
 
 function normalizeRecord(record) {
+  const cantidad = Number(record.cantidad || 0);
+  const precioUnitario = Number(record.precioUnitario || 0);
+
   return {
     id: record.id || generateId(),
     fechaHora: record.fechaHora || toDatetimeLocalValue(new Date()),
-    detalle: record.detalle || "",
-    categoria: record.categoria || "",
+    detalle: String(record.detalle || "").trim(),
+    categoria: String(record.categoria || "").trim(),
     movimiento: record.movimiento || "Egreso",
-    cantidad: Number(record.cantidad || 0),
-    precioUnitario: Number(record.precioUnitario || 0),
+    cantidad,
+    precioUnitario,
     moneda: record.moneda || "USD",
-    total: Number(record.total || Number(record.cantidad || 0) * Number(record.precioUnitario || 0)),
+    total: Number(record.total || cantidad * precioUnitario),
   };
 }
 
@@ -648,6 +737,7 @@ function toDatetimeLocalValue(date) {
 function formatDateTime(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value || "-";
+
   return new Intl.DateTimeFormat("es-AR", {
     dateStyle: "short",
     timeStyle: "short",
@@ -674,6 +764,7 @@ function formatCurrency(value, currency = "USD") {
 }
 
 function setMessage(element, message, isError) {
+  if (!element) return;
   element.textContent = message;
   element.style.color = isError ? "var(--danger)" : "var(--text-soft)";
 }
