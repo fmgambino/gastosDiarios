@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gastos Diarios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <section id="loginScreen" class="screen screen--active">
+      <div class="login-shell">
+        <div class="login-card">
+          <div class="login-brand">
+            <img src="assets/logo-placeholder.svg" alt="Logo" class="login-logo" />
+            <div>
+              <h1>Gastos Diarios</h1>
+              <p>Ingreso al panel administrativo</p>
+            </div>
+          </div>
+
+          <form id="loginForm" class="login-form">
+            <label>
+              Usuario
+              <input type="text" id="username" placeholder="admin" autocomplete="username" required />
+            </label>
+
+            <label>
+              Contraseña
+              <input type="password" id="password" placeholder="********" autocomplete="current-password" required />
+            </label>
+
+            <button type="submit" class="primary-button">Ingresar</button>
+            <p id="loginMessage" class="form-message"></p>
+          </form>
+
+          <div class="login-help">
+            <span><strong>Demo:</strong> admin / admin342$$=</span>
+            <span>Responsive + Google Sheets</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboardScreen" class="screen">
+      <header class="app-header">
+        <div class="brand">
+          <img src="assets/logo-placeholder.svg" alt="Logo" class="brand-logo" />
+          <div class="brand-copy">
+            <h2>Gastos Diarios</h2>
+            <p>Dashboard financiero diario</p>
+          </div>
+        </div>
+
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Cambiar tema">
+          <span class="toggle-icon toggle-icon--sun" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 4V2m0 20v-2m8-8h2M2 12h2m13.657 5.657 1.414 1.414M4.929 4.929 6.343 6.343m11.314-1.414-1.414 1.414M6.343 17.657l-1.414 1.414M12 7a5 5 0 1 0 0 10a5 5 0 0 0 0-10Z"/></svg>
+          </span>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-icon toggle-icon--moon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4A8.5 8.5 0 1 0 20 14.5Z"/></svg>
+          </span>
+        </button>
+      </header>
+
+      <button id="filtersToggleBtn" class="filters-fab" type="button" aria-label="Mostrar filtros">
+        <svg viewBox="0 0 24 24"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
+      </button>
+
+      <main class="dashboard-shell">
+        <aside id="filtersPanel" class="filters-panel">
+          <div class="filters-head">
+            <div class="filters-title">
+              <span class="filters-icon">
+                <svg viewBox="0 0 24 24"><path d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15a7.5 7.5 0 0 1 0 15Z"/></svg>
+              </span>
+              <div>
+                <h3>Filtros</h3>
+                <p>Periodo, categoría y detalle</p>
+              </div>
+            </div>
+          </div>
+
+          <form id="filtersForm" class="filters-form">
+            <label>
+              Periodo
+              <select id="periodFilter">
+                <option value="7">Últimos 7 días</option>
+                <option value="30" selected>Últimos 30 días</option>
+                <option value="custom">Desde / Hasta</option>
+                <option value="all">Todo</option>
+              </select>
+            </label>
+
+            <div id="customDates" class="custom-dates hidden">
+              <label>
+                Desde
+                <input type="date" id="fromFilter" />
+              </label>
+              <label>
+                Hasta
+                <input type="date" id="toFilter" />
+              </label>
+            </div>
+
+            <label>
+              Categoría
+              <select id="categoryFilter">
+                <option value="">Todas</option>
+              </select>
+            </label>
+
+            <label>
+              Detalle
+              <input type="text" id="detailFilter" placeholder="Ej: alquiler" />
+            </label>
+
+            <label>
+              Buscar
+              <input type="text" id="searchFilter" placeholder="Buscar por detalle, ID o categoría" />
+            </label>
+
+            <div class="filters-actions">
+              <button type="submit" class="primary-button">Aplicar</button>
+              <button type="button" id="clearFiltersBtn" class="secondary-button">Limpiar</button>
+            </div>
+          </form>
+        </aside>
+
+        <section class="content-panel">
+          <div class="stats-grid">
+            <article class="stat-card stat-card--income">
+              <span class="stat-label">Ingresos</span>
+              <strong id="incomeValue" class="stat-value">USD 0.00</strong>
+            </article>
+
+            <article class="stat-card stat-card--expense">
+              <span class="stat-label">Egresos / Gastos</span>
+              <strong id="expenseValue" class="stat-value">USD 0.00</strong>
+            </article>
+
+            <article class="stat-card stat-card--balance">
+              <span class="stat-label">Saldo</span>
+              <strong id="balanceValue" class="stat-value">USD 0.00</strong>
+            </article>
+
+            <article class="stat-card stat-card--saving">
+              <span class="stat-label">Ahorro</span>
+              <strong id="savingValue" class="stat-value">USD 0.00</strong>
+            </article>
+          </div>
+
+          <section class="table-card">
+            <div class="table-toolbar">
+              <div>
+                <h3>Registros</h3>
+                <p id="tableCount">0 registros</p>
+              </div>
+
+              <button type="button" id="refreshBtn" class="secondary-button">Actualizar</button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Fecha / Hora</th>
+                    <th>Detalle</th>
+                    <th>Categoría</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Tipo Moneda</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="recordsTableBody">
+                  <tr>
+                    <td colspan="9" class="empty-state">Sin registros cargados.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <button id="openModalBtn" class="fab" type="button" aria-label="Nuevo registro">
+        <span>+</span>
+      </button>
+
+      <footer class="app-footer">
+        <p>IFLIA GAMBINO-JUÁREZ © 2026</p>
+        <p>by Ing. Fernando Gambino &amp; C.P. Carolina Juárez · Todos los Derechos Registrados</p>
+      </footer>
+    </section>
+  </div>
+
+  <div id="recordModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h3 id="modalTitle">Nuevo registro</h3>
+          <p id="modalSubtitle">Carga y edición de movimientos</p>
+        </div>
+        <button type="button" class="icon-button" data-close-modal="true" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18"/></svg>
+        </button>
+      </div>
+
+      <form id="recordForm" class="record-form">
+        <div class="form-grid">
+          <label>
+            ID
+            <input type="text" id="recordId" readonly />
+          </label>
+
+          <label>
+            Fecha / Hora
+            <input type="datetime-local" id="recordDateTime" required />
+          </label>
+
+          <label class="col-span-2">
+            Detalle
+            <input type="text" id="recordDetail" maxlength="120" required />
+          </label>
+
+          <label>
+            Categoría
+            <input type="text" id="recordCategory" list="categoriesList" placeholder="Ej: 💡 Luz" required />
+            <datalist id="categoriesList"></datalist>
+          </label>
+
+          <label>
+            Tipo de movimiento
+            <select id="recordMovement" required>
+              <option value="Ingreso">Ingreso</option>
+              <option value="Egreso">Egreso</option>
+              <option value="Ahorro">Ahorro</option>
+            </select>
+          </label>
+
+          <label>
+            Cantidad
+            <input type="number" id="recordQuantity" step="0.01" min="0" value="1" required />
+          </label>
+
+          <label>
+            Precio Unitario
+            <input type="number" id="recordUnitPrice" step="0.01" min="0" value="0" required />
+          </label>
+
+          <label>
+            Tipo Moneda
+            <select id="recordCurrency" required>
+              <option value="USD">USD</option>
+              <option value="ARS">ARS</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </label>
+
+          <label>
+            Total
+            <input type="number" id="recordTotal" step="0.01" readonly />
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-button" data-close-modal="true">Cancelar</button>
+          <button type="submit" id="saveRecordBtn" class="primary-button">Guardar</button>
+        </div>
+
+        <p class="modal-note">Se agregó el campo <strong>Tipo de movimiento</strong> para poder calcular correctamente Ingresos, Egresos, Saldo y Ahorro en el dashboard.</p>
+        <p id="formMessage" class="form-message"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
