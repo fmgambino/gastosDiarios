@@ -1,0 +1,2 @@
+ID,FechaHora,Detalle,Categoria,Cantidad,PrecioUnitario,Moneda,Total,Movimiento,CreatedAt,UpdatedAt
+GD-EXAMPLE-001,2026-04-04T10:30,Ejemplo de ingreso,💰 Sueldo,"1,00","1000,00",USD,"1000,00",Ingreso,"46116,4375","46116,4375"
